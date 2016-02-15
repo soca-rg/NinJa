@@ -95,16 +95,16 @@ int main(int argc, char **argv)
 
     cvSetCaptureProperty(capture, CV_CAP_PROP_POS_FRAMES, 0);
     cvSetCaptureProperty(capture2, CV_CAP_PROP_POS_FRAMES, 0);
-	/*INISIASI DETEKSI SUDUT DENGAN METODE SHI-TOMASI */
-	int maxcorners = 100;
-	vector<point2f> corners;
-	double qualitylevel = 0.01;
-	double mindistance = 10;
-	int blocksize = 3;
-	bool useharrisdetector = false;
-	double kk = 0.04;
-	std::vector<Point2f> pointsRow;
-	oldPoints.push_back(pointsRow);
+    /*INISIASI DETEKSI SUDUT DENGAN METODE SHI-TOMASI */
+    int maxcorners = 100;
+    vector<point2f> corners;
+    double qualitylevel = 0.01;
+    double mindistance = 10;
+    int blocksize = 3;
+    bool useharrisdetector = false;
+    double kk = 0.04;
+    std::vector<Point2f> pointsRow;
+    oldPoints.push_back(pointsRow);
 	
     const int MAX_CORNERS = 500;
     int num_boxes=0;
@@ -122,9 +122,8 @@ int main(int argc, char **argv)
 	        /*VARIABEL UNTUK FRAME SEBELUM DAN SAAT INI*/
 
             frame_p = cvQueryFrame(capture);    
-			frame_p_gray=cvCreateImage(cvSize(frame_c->width,frame_c->height), IPL_DEPTH_8U, 1 );
-		
-			cvCvtColor(frame_p, frame_p_gray, CV_BGR2GRAY ); 
+    	    frame_p_gray=cvCreateImage(cvSize(frame_c->width,frame_c->height), IPL_DEPTH_8U, 1 );
+	    cvCvtColor(frame_p, frame_p_gray, CV_BGR2GRAY ); 
 
             if( !frame_p )
             break;
@@ -137,16 +136,17 @@ int main(int argc, char **argv)
             frame_c = cvQueryFrame(capture2);
    
            /*VARIABEL UNTUK FRAME SEBELUM DAN SAAT INI*/ 
-		    frame_p_gray=cvCreateImage(cvSize(frame_c->width,frame_c->height), IPL_DEPTH_8U, 1 );
-			frame_c_gray=cvCreateImage(cvSize(frame_c->width,frame_c->height), IPL_DEPTH_8U, 1 );
-			frame=cvCreateImage(cvSize(frame_c->width,frame_c->height), IPL_DEPTH_8U, 1 );
-			
-			cvCvtColor(frame_p, frame_p_gray, CV_BGR2GRAY ); 
-			cvCvtColor(frame_c, frame_c_gray, CV_BGR2GRAY );
-			/* DETEKSI SUDUT*/
-			goodfeaturestotrack( frame_p,  corners,   maxcorners,   qualitylevel,   mindistance,  mat(),  blocksize, useharrisdetector,  kk );
-			int points_size=corners.size();
-			for(int i=0;i<points_size;i++) oldpoints[init_track].push_back(corners[i]);
+	    frame_p_gray=cvCreateImage(cvSize(frame_c->width,frame_c->height), IPL_DEPTH_8U, 1 );
+    	    frame_c_gray=cvCreateImage(cvSize(frame_c->width,frame_c->height), IPL_DEPTH_8U, 1 );
+	    frame=cvCreateImage(cvSize(frame_c->width,frame_c->height), IPL_DEPTH_8U, 1 );
+	
+	    cvCvtColor(frame_p, frame_p_gray, CV_BGR2GRAY ); 
+	    cvCvtColor(frame_c, frame_c_gray, CV_BGR2GRAY );
+	    /* DETEKSI SUDUT*/
+	    goodfeaturestotrack( frame_p,  corners,   maxcorners,   qualitylevel,   mindistance,  mat(),  blocksize, useharrisdetector,  kk );
+	    int points_size=corners.size();
+	    for(int i=0;i<points_size;i++) oldpoints[init_track].push_back(corners[i]);
+            
             if( !frame_p )
             break;
             if( !frame_c )
@@ -154,25 +154,25 @@ int main(int argc, char **argv)
         }
 
         
-		/*KALKULASI OPTICAL FLOW*/
-		calcOpticalFlowPyrLK( frame_p, frame_c, oldPoints[ibox], newPoints, LKstatus, errors, Size(25,25), 4, termcrit, 0, 0.1);
-		/*MEDIAN DLOW*/
-		std::vector<float> deltax;
-		std::vector<float> deltay;
-		int num = 0;
-		for (int i = 0; i <  newPoints.size(); ++i)
+	/*KALKULASI OPTICAL FLOW*/
+	calcOpticalFlowPyrLK( frame_p, frame_c, oldPoints[ibox], newPoints, LKstatus, errors, Size(25,25), 4, termcrit, 0, 0.1);
+	/*MEDIAN DLOW*/
+	std::vector<float> deltax;
+	std::vector<float> deltay;
+	int num = 0;
+	for (int i = 0; i <  newPoints.size(); ++i)
+	{
+		if (LKstatus[i] > 0)
 		{
-			if (LKstatus[i] > 0)
-			{
-			  deltax.push_back(newPoints[i].x - oldPoints[ibox][i].x);
-			  deltay.push_back(newPoints[i].y - oldPoints[ibox][i].y);
-			  ++num;
-			  circle(frame, newPoints[i], 2, Scalar(0,0,255), 1);
-			}
-
+		  deltax.push_back(newPoints[i].x - oldPoints[ibox][i].x);
+		  deltay.push_back(newPoints[i].y - oldPoints[ibox][i].y);
+		  ++num;
+		  
 		}
 
-		float dx = median(&deltax, false), dy = median(&deltay, false);  
+	}
+
+	float dx = median(&deltax, false), dy = median(&deltay, false);  
         
         /*EKSTRAKSI FOREGROUND/OBJEK*/   
         cvAbsDiff( frame_p_gray, frame_c_gray, frame ); 
